@@ -1,14 +1,20 @@
 import React, {Component} from 'react';
 import Categories from './Categories';
+import ChannelList from './ChannelList';
 import { StyleSheet, Text, View } from 'react-native';
 import parse from './Parsing';
 import hlsArray from './hls';
-import film from './img/film-roll.png';
-import headphones from './img/headphones.png';
-import star from './img/shooting-star.png';
-import masks from './img/theater.png';
-import all from './img/crowd-of-users.png';
-export default class ChannelMenu extends Component
+import  {setMenusVisible,getChannels,toggleCategory} from './actions/actions';
+var film = require('./img/film-roll.png');
+var headphones = require('./img/headphones.png');
+var star=require('./img/shooting-star.png');
+var masks=require('./img/theater.png');
+var all = require('./img/crowd-of-users.png');
+var tv = require('./img/television.png');
+import  {connect} from 'react-redux';
+import  {bindActionCreators} from 'redux';
+
+class ChannelMenu extends Component
                                  {
     constructor(props)
     {
@@ -20,27 +26,28 @@ export default class ChannelMenu extends Component
     this.state = {chosen:1};
 
     }
-    menuState (num)              {
+    menuState (num)                 {
     this.setState({chosen:num});
-                                 }
-    menuGetState(num)            {
+                                    }
+    menuGetState(num)               {
     if (num === this.state.chosen)
     return  styles.testChosen;
     else  return  styles.text
 
-                                 }
-    firstToUpperCase( str )      {
+                                        }
+    firstToUpperCase( str )             {
     return str.substr(0, 1).toUpperCase() + str.substr(1);
-                                 }
-    chooseSrc(categoryName)         {
-    switch (categoryName)           {
+                                        }
+    chooseSrc(categoryName)             {
+    switch (categoryName)               {
     case 'Фильмы': return film;
     break;
     case 'Все жанры':return all;
     break;
     case 'Музыкальный':return headphones;
     break;
-    case 'Развлекательный':return masks
+    case 'Развлекательный':return masks;
+    default: return tv
 
                                      }
                                      }
@@ -58,7 +65,7 @@ export default class ChannelMenu extends Component
     grpArr.push       ({name:this.firstToUpperCase(Object.keys(obj)[key]),
     src:this.chooseSrc(this.firstToUpperCase(Object.keys(obj)[key]))});
     }
-    grpArr.unshift({name: 'Любимые', src: star});
+    grpArr.unshift({name: 'Любимые',  src:star});
     grpArr.unshift({name: 'Все жанры',src:all});
     return grpArr;
     }
@@ -67,7 +74,7 @@ export default class ChannelMenu extends Component
     switch (num) {
         case 1: return <Categories categories={this.parseCategories()}/>;
             break;
-        case 2: return null;
+        case 2: return <ChannelList channels= {this.props.channels}/>;
             break;
         case 3: return null;
             break;
@@ -75,7 +82,7 @@ export default class ChannelMenu extends Component
                  }
                                  }
     menuGetStateLine(num)        {
-    switch (num) {
+    switch (num)                 {
         case 1: return styles.bottomLineChosen1;
         break;
         case 2: return styles.bottomLineChosen2;
@@ -88,31 +95,33 @@ export default class ChannelMenu extends Component
 
     render()   {
         return (
-            <View style={styles.container}>
-            <View style={styles.menuContainer}>
-            <Text style={this.menuGetState(1)} onPress={(e)=>this.menuState(1)}>Categories</Text>
-            <Text style={this.menuGetState(2)} onPress={(e)=>this.menuState(2)}>All channels</Text>
-            <Text style={this.menuGetState(3)} onPress={(e)=>this.menuState(3)}>TV program</Text>
-            </View>
-                <View style={styles.bottomLine}>
-                <View style={this.menuGetStateLine(this.state.chosen)}/>
+                <View style={styles.container}>
+                <View style={styles.menuContainer}>
+                <Text style={this.menuGetState(1)} onPress={(e)=>this.menuState(1)}>Categories</Text>
+                <Text style={this.menuGetState(2)} onPress={(e)=>this.menuState(2)}>All channels</Text>
+                <Text style={this.menuGetState(3)} onPress={(e)=>this.menuState(3)}>TV program</Text>
                 </View>
-            <View style={styles.innerCont}>
-                {this.conditionalRender(this.state.chosen)}
-            </View>
-            </View>
-        );
+                    <View style={styles.bottomLine}>
+                    <View style={this.menuGetStateLine(this.state.chosen)}/>
+                    </View>
+                <View style={styles.innerCont}>
+                    {this.conditionalRender(this.state.chosen)}
+                </View>
+                </View>
+                );
                 }
                                  }
 
 const styles = StyleSheet.create({
     container:      {
-        top:'20%',
+        //top:'30%',
         width:'100%',
         backgroundColor:'black',
-        height:'70%'
+        height:'70%',
+        //flex:4
 
                     },
+
     menuContainer:  {
         height: 50,
         width:'96%',
@@ -168,9 +177,21 @@ const styles = StyleSheet.create({
                                  },
     innerCont:                   {
     width:'100%',
-    height:'100%',
+    height:'80%',
     //backgroundColor:'yellow',
     //borderRadius:3
 
                                  }
 });
+
+
+const mapDispatchToProps = (dispatch) =>
+    bindActionCreators({
+        dispatch,setMenusVisible,getChannels,toggleCategory
+    },  dispatch);
+export default connect(
+    state =>
+        ({ channels:state.channelReducer.channels
+        }),
+mapDispatchToProps
+)(ChannelMenu);
